@@ -1,0 +1,7 @@
+{
+  "makefile.extensionOutputFolder": "./.vscode",
+  "files.associations": {
+    "aes.h": "c",
+    "stdint.h": "c"
+  }
+}
