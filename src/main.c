@@ -177,6 +177,34 @@ void test_shift_rows() {
   printf("\t[✅] Passed\n");
 }
 
+void test_inv_shift_rows() {
+  printf("test_inv_shift_rows\n");
+
+  AES_Block_t input = {
+    { 1,  2,  3,  4  },
+    { 5,  6,  7,  8  },
+    { 9,  10, 11, 12 },
+    { 13, 14, 15, 16 },
+  };
+
+  AES_Block_t expectedShift = {
+    {  1, 14, 11,  8 },
+    {  5,  2, 15, 12 },
+    {  9,  6,  3, 16 },
+    { 13, 10,  7,  4 },
+  };
+
+  AES_InvShiftRows(input);
+
+  for  (size_t row = 0; row < 4; row++) {
+    for  (size_t col = 0; col < 4; col++) {
+      assert(input[row][col] == expectedShift[row][col]);
+    }
+  }
+
+  printf("\t[✅] Passed\n");
+}
+
 extern uint8_t mix_encrypt_coef[];
 extern uint8_t mix_decrypt_coef[];
 void test_mix_columns() {
@@ -248,6 +276,47 @@ void test_encrypt() {
   printf("\t[✅] Passed\n");
 }
 
+void test_decrypt() {
+  printf("test_decrypt\n");
+
+  AES_Block_t input = {
+    {0x39, 0x25, 0x84, 0x1d},
+    {0x02, 0xdc, 0x09, 0xfb},
+    {0xdc, 0x11, 0x85, 0x97},
+    {0x19, 0x6a, 0x0b, 0x32},
+  };
+
+  AES_Block_t expected = {
+    {0x32, 0x43, 0xf6, 0xa8},
+    {0x88, 0x5a, 0x30, 0x8d},
+    {0x31, 0x31, 0x98, 0xa2},
+    {0xe0, 0x37, 0x07, 0x34},
+  };
+
+  uint8_t key[] = { 0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c };
+  AES_Block_t roundKeysPtr[NUM_ROUND_KEYS_128] = {};
+  AES_KeySchedule128(key, roundKeysPtr);
+
+  AES_DecryptBlock(input, roundKeysPtr);
+
+  for  (size_t row = 0; row < 4; row++) {
+    for  (size_t col = 0; col < 4; col++) {
+      assert(input[row][col] == expected[row][col]);
+    }
+  }
+
+  // Also check that the encrypt function doesn't touch the roundKeyPtr
+  assert(
+       (roundKeysPtr[0][0][0] == key[0])
+    && (roundKeysPtr[0][0][1] == key[1])
+    && (roundKeysPtr[0][0][2] == key[2])
+    && (roundKeysPtr[0][0][3] == key[3])
+  );
+
+  printf("\t[✅] Passed\n");
+}
+
+
 int main() {
   test_gf_multiply();
   test_sub_bytes();
@@ -255,6 +324,9 @@ int main() {
   test_key_schedule();
   test_mix_columns();
   test_encrypt();
+
+  test_inv_shift_rows();
+  test_decrypt();
 
   return 0;
 }

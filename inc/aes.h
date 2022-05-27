@@ -23,6 +23,11 @@ void AES_SubWord(AES_Column_t word, const uint8_t table[]);
 void AES_ShiftRows(AES_Block_t state);
 void AES_MixColumns(AES_Block_t state);
 
+void AES_InvShiftRows(AES_Block_t state);
+void AES_InvMixColumns(AES_Block_t state);
+
+
 void AES_EncryptBlock(AES_Block_t state, const AES_Block_t* keySchedule);
+void AES_DecryptBlock(AES_Block_t state, const AES_Block_t* keySchedule);
 
 #endif // AES__H

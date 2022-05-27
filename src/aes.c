@@ -167,6 +167,7 @@ void AES_ShiftRows(AES_Block_t state) {
   // in each array of the block instead of rows
 
   // Shift row 1
+  // [0] [1] [2] [3] -> [1] [2] [3] [0]
   temp0 = state[0][1];
   state[0][1] = state[1][1];
   state[1][1] = state[2][1];
@@ -174,6 +175,7 @@ void AES_ShiftRows(AES_Block_t state) {
   state[3][1] = temp0;
 
   // Shift row 2
+  // [0] [1] [2] [3] -> [2] [3] [0] [1]
   temp0 = state[0][2];
   temp1 = state[1][2];
   state[0][2] = state[2][2];
@@ -182,6 +184,7 @@ void AES_ShiftRows(AES_Block_t state) {
   state[3][2] = temp1;
 
   // Shift row 3
+  // [0] [1] [2] [3] -> [3] [0] [1] [2]
   temp0 = state[3][3];
   state[3][3] = state[2][3];
   state[2][3] = state[1][3];
@@ -189,14 +192,57 @@ void AES_ShiftRows(AES_Block_t state) {
   state[0][3] = temp0;
 }
 
+void AES_InvShiftRows(AES_Block_t state) {
+  uint8_t temp0;
+  uint8_t temp1;
+
+  // Shift row 1
+  // [0] [1] [2] [3] -> [3] [0] [1] [2]
+  temp0 = state[3][1];
+  state[3][1] = state[2][1];
+  state[2][1] = state[1][1];
+  state[1][1] = state[0][1];
+  state[0][1] = temp0;
+
+  // Shift row 2
+  // [0] [1] [2] [3] -> [2] [3] [0] [1]
+  temp0 = state[0][2];
+  temp1 = state[1][2];
+  state[0][2] = state[2][2];
+  state[1][2] = state[3][2];
+  state[2][2] = temp0;
+  state[3][2] = temp1;
+
+  // Shift row 3
+  // [0] [1] [2] [3] -> [1] [2] [3] [0]
+  temp0 = state[0][3];
+  state[0][3] = state[1][3];
+  state[1][3] = state[2][3];
+  state[2][3] = state[3][3];
+  state[3][3] = temp0;
+}
+
 void AES_MixColumns(AES_Block_t state) {
   AES_Column_t temp = { 0 };
 
   for (size_t i = 0; i < 4; i++) {
     temp[0] = GF_Mult(0x02, state[i][0]) ^ GF_Mult(0x03, state[i][1]) ^ state[i][2] ^ state[i][3];
-    temp[1] = state[i][0] ^ GF_Mult(0x02, state[i][1]) ^ GF_Mult(0x3, state[i][2]) ^ state[i][3];
-    temp[2] = state[i][0] ^ state[i][1] ^ GF_Mult(0x02, state[i][2]) ^ GF_Mult(0x3, state[i][3]);
-    temp[3] = GF_Mult(0x3, state[i][0]) ^ state[i][1] ^ state[i][2] ^ GF_Mult(0x02, state[i][3]);
+    temp[1] = state[i][0] ^ GF_Mult(0x02, state[i][1]) ^ GF_Mult(0x03, state[i][2]) ^ state[i][3];
+    temp[2] = state[i][0] ^ state[i][1] ^ GF_Mult(0x02, state[i][2]) ^ GF_Mult(0x03, state[i][3]);
+    temp[3] = GF_Mult(0x03, state[i][0]) ^ state[i][1] ^ state[i][2] ^ GF_Mult(0x02, state[i][3]);
+
+    state[i][0] = temp[0]; state[i][1] = temp[1]; state[i][2] = temp[2]; state[i][3] = temp[3];
+  }
+}
+
+void AES_InvMixColumns(AES_Block_t state) {
+  AES_Column_t temp = { 0 };
+
+  for (size_t i = 0; i < 4; i++) {
+    temp[0] = GF_Mult(0x0e, state[i][0]) ^ GF_Mult(0x0b, state[i][1]) ^ GF_Mult(0x0d, state[i][2]) ^ GF_Mult(0x09, state[i][3]);
+    temp[1] = GF_Mult(0x09, state[i][0]) ^ GF_Mult(0x0e, state[i][1]) ^ GF_Mult(0x0b, state[i][2]) ^ GF_Mult(0x0d, state[i][3]);
+    temp[2] = GF_Mult(0x0d, state[i][0]) ^ GF_Mult(0x09, state[i][1]) ^ GF_Mult(0x0e, state[i][2]) ^ GF_Mult(0x0b, state[i][3]);
+    temp[3] = GF_Mult(0x0b, state[i][0]) ^ GF_Mult(0x0d, state[i][1]) ^ GF_Mult(0x09, state[i][2]) ^ GF_Mult(0x0e, state[i][3]);
 
     state[i][0] = temp[0]; state[i][1] = temp[1]; state[i][2] = temp[2]; state[i][3] = temp[3];
   }
@@ -229,4 +275,24 @@ void AES_EncryptBlock(AES_Block_t state, const AES_Block_t* keySchedule) {
 
     AES_AddRoundKey(state, *roundKey++);
   }
+}
+
+void AES_DecryptBlock(AES_Block_t state, const AES_Block_t* keySchedule) {
+  AES_Block_t* roundKey = (AES_Block_t*)keySchedule + NUM_ROUND_KEYS_128 - 1;
+
+  // Note that i starts at 1 since the initial round key is applied already
+  for (size_t i = 1; i < NUM_ROUND_KEYS_128; i++) {
+    AES_AddRoundKey(state, *roundKey--);
+
+    // No column mix in the first round
+    if (i != 1) {
+      AES_InvMixColumns(state);
+    }
+
+    AES_InvShiftRows(state);
+    AES_SubBytes(state, sbox_decrypt);
+  }
+
+  // Last key addition
+  AES_AddRoundKey(state, *roundKey);
 }
