@@ -13,7 +13,7 @@ uint8_t GF_Mult(uint8_t a, uint8_t b);
 void GF_WordAdd(AES_Column_t a, AES_Column_t b, AES_Column_t dest);
 void GF_ModularProduct(AES_Column_t a, AES_Column_t b, AES_Column_t dest);
 
-void AES_KeySchedule128(AES_Key128_t key, AES_Block_t* keysOut);
+void AES_KeySchedule128(const AES_Key128_t key, AES_Block_t* keysOut);
 
 void AES_RotWord(AES_Column_t word);
 void AES_AddRoundKey(AES_Block_t state, const AES_Block_t roundKey);

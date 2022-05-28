@@ -98,7 +98,7 @@ AES_Column_t Rcon[] = {
   { 0x36, 0x00, 0x00, 0x00 },
 };
 
-void AES_KeySchedule128(AES_Key128_t key, AES_Block_t* keysOut) {
+void AES_KeySchedule128(const AES_Key128_t key, AES_Block_t* keysOut) {
   // Track which round key we're on
   AES_Block_t* currentRoundKey = keysOut;
 
