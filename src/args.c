@@ -37,21 +37,18 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
       case 'k': {
         arguments->haveKeyFile = true;
         arguments->keyFile = arg;
-        printf("keyFile: %s\n", arg);
         break;
       }
 
       case 'i': {
         arguments->haveInFile = true;
         arguments->inFile = arg;
-        printf("inFile: %s\n", arg);
         break;
       }
 
       case 'o': {
         arguments->haveOutFile = true;
         arguments->outFile = arg;
-        printf("outFile: %s\n", arg);
         break;
       }
 
