@@ -1,8 +1,7 @@
 #ifndef AES__H
 #define AES__H
 
-#include <stdint.h>
-#include <stddef.h>
+#include "common.h"
 
 #define NUM_ROUND_KEYS_128 (11)
 

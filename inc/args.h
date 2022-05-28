@@ -1,8 +1,8 @@
 #ifndef AES_ARGS_H
 #define AES_ARGS_H
 
+#include "common.h"
 #include <argp.h>
-#include <stdbool.h>
 
 struct arguments {
   enum { RUN_TESTS, NO_ARGS, ENCRYPT, DECRYPT } mode;
