@@ -29,7 +29,7 @@ uint8_t* AES_EncryptFileECB(
   size_t* outputSize
 ) {
   // When the input is too small to fill a complete last block, we need to add padding
-  size_t bytesToPad = inputSize % 16;
+  size_t bytesToPad = 16 - (inputSize % 16);
 
   // If the input is exactly a the right size for a block, we still add one blocks worth
   // of padding
@@ -154,7 +154,7 @@ uint8_t* AES_EncryptFileCBC(
   }
 
   // When the input is too small to fill a complete last block, we need to add padding
-  size_t bytesToPad = inputSize % 16;
+  size_t bytesToPad = 16 - (inputSize % 16);
 
   // If the input is exactly a the right size for a block, we still add one blocks worth
   // of padding
