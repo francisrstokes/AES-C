@@ -5,7 +5,17 @@
 #include <argp.h>
 
 struct arguments {
-  enum { RUN_TESTS, NO_ARGS, ENCRYPT, DECRYPT } mode;
+  enum {
+    RUN_TESTS,
+    NO_ARGS,
+    ENCRYPT,
+    DECRYPT,
+  } operation;
+
+  enum {
+    ECB,
+    CBC,
+  } mode;
 
   bool haveKeyFile;
   bool haveInFile;

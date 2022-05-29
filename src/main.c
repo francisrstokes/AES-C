@@ -9,9 +9,21 @@ extern struct argp argp;
 
 size_t GetFileSize(FILE* fp);
 
+// Define a table of encryption/decryption function, indexed by mode
+static CryptoOpFn EncryptFn[] = {
+  AES_EncryptFileECB,
+  AES_EncryptFileCBC,
+};
+
+static CryptoOpFn DecryptFn[] = {
+  AES_DecryptFileECB,
+  AES_DecryptFileCBC,
+};
+
 int main(int argc, char *argv[]) {
   struct arguments arguments = {0};
-  arguments.mode = NO_ARGS;
+  arguments.operation = NO_ARGS;
+  arguments.mode = ECB;
   error_t parseResult = argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
   //////////////////////////////////////////////////////////////////////////////
@@ -22,7 +34,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  if (arguments.mode == NO_ARGS) {
+  if (arguments.operation == NO_ARGS) {
     printf("No arguments provided. Use --help for usage\n");
     return 1;
   }
@@ -30,7 +42,7 @@ int main(int argc, char *argv[]) {
   //////////////////////////////////////////////////////////////////////////////
   //                                 Tests
   //////////////////////////////////////////////////////////////////////////////
-  if (arguments.mode == RUN_TESTS) {
+  if (arguments.operation == RUN_TESTS) {
     run_tests();
     return 0;
   }
@@ -90,10 +102,10 @@ int main(int argc, char *argv[]) {
   fread(inputBuffer, 1, inFileSize, fInput);
   fclose(fInput);
 
-  if (arguments.mode == ENCRYPT) {
+  if (arguments.operation == ENCRYPT) {
     // Encrypt file
     size_t outputSize;
-    uint8_t* outputBuffer = AES_EncryptFileECB(keyBuffer, inputBuffer, inFileSize, &outputSize);
+    uint8_t* outputBuffer = EncryptFn[arguments.mode](keyBuffer, inputBuffer, inFileSize, &outputSize);
 
     // Write encrypted file
     fwrite(outputBuffer, 1, outputSize, fOutput);
@@ -106,10 +118,10 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  if (arguments.mode == DECRYPT) {
+  if (arguments.operation == DECRYPT) {
     // Encrypt file
     size_t outputSize;
-    uint8_t* outputBuffer = AES_DecryptFileECB(keyBuffer, inputBuffer, inFileSize, &outputSize);
+    uint8_t* outputBuffer = DecryptFn[arguments.mode](keyBuffer, inputBuffer, inFileSize, &outputSize);
 
     if (outputBuffer == NULL) {
       printf("Unable to properly decrypt file\n");
