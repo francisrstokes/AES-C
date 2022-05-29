@@ -18,7 +18,7 @@ OTHER_DEPS=$(INC_DIR)/*.h Makefile
 
 EXE=main
 
-.PHONY: all clean
+.PHONY: all clean test
 
 all: $(BUILD_DIR)/$(EXE)
 
@@ -32,3 +32,6 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(OTHER_DEPS)
 
 clean:
 	$(RM) $(OBJ_DIR)/* $(BUILD_DIR)/*
+
+test: $(BUILD_DIR)/$(EXE)
+	$(BUILD_DIR)/$(EXE) -t

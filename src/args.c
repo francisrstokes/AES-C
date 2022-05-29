@@ -22,7 +22,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state) {
 
     switch (key) {
       case 't': {
-        arguments->mode = RUN_TESTS;
+        arguments->operation = RUN_TESTS;
         break;
       }
 

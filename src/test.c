@@ -10,6 +10,9 @@ void run_tests() {
 
   test_inv_shift_rows();
   test_decrypt();
+
+  test_ecb();
+  test_cbc();
 }
 
 void test_gf_multiply() {
@@ -324,4 +327,118 @@ void test_decrypt() {
   );
 
   printf("\t[✅] Passed\n");
+}
+
+void test_ecb(void) {
+  printf("test_ecb\n");
+
+  // Read the input file
+  FILE* f = fopen("fixtures/input.txt", "rb");
+  assert(f);
+  size_t inputSize = GetFileSize(f);
+  assert(inputSize > 0);
+  uint8_t* inputBytes = malloc(inputSize);
+  assert(inputBytes);
+  size_t bytesRead = fread(inputBytes, 1, inputSize, f);
+  assert(bytesRead == inputSize);
+  fclose(f);
+
+  // Read the key
+  f = fopen("fixtures/key.bin", "rb");
+  assert(f);
+  size_t keySize = GetFileSize(f);
+  assert(keySize == 16);
+  uint8_t keyBytes[16];
+  bytesRead = fread(keyBytes, 1, 16, f);
+  assert(bytesRead == keySize);
+  fclose(f);
+
+  size_t outputSize;
+  uint8_t* outputBytes = AES_EncryptFileECB(
+    keyBytes,
+    inputBytes,
+    inputSize,
+    &outputSize
+  );
+
+  assert(outputBytes);
+  assert(outputSize >= inputSize);
+
+  size_t decryptedSize;
+  uint8_t* decryptedBytes = AES_DecryptFileECB(
+    keyBytes,
+    outputBytes,
+    outputSize,
+    &decryptedSize
+  );
+
+  assert(decryptedBytes);
+  assert(decryptedSize == inputSize);
+
+  for (size_t i = 0; i < inputSize; i++) {
+    assert(inputBytes[i] == decryptedBytes[i]);
+  }
+
+  printf("\t[✅] Passed\n");
+
+  free(inputBytes);
+  free(outputBytes);
+  free(decryptedBytes);
+}
+
+void test_cbc(void) {
+  printf("test_cbc\n");
+
+  // Read the input file
+  FILE* f = fopen("fixtures/input.txt", "rb");
+  assert(f);
+  size_t inputSize = GetFileSize(f);
+  assert(inputSize > 0);
+  uint8_t* inputBytes = malloc(inputSize);
+  assert(inputBytes);
+  size_t bytesRead = fread(inputBytes, 1, inputSize, f);
+  assert(bytesRead == inputSize);
+  fclose(f);
+
+  // Read the key
+  f = fopen("fixtures/key.bin", "rb");
+  assert(f);
+  size_t keySize = GetFileSize(f);
+  assert(keySize == 16);
+  uint8_t keyBytes[16];
+  bytesRead = fread(keyBytes, 1, 16, f);
+  assert(bytesRead == keySize);
+  fclose(f);
+
+  size_t outputSize;
+  uint8_t* outputBytes = AES_EncryptFileCBC(
+    keyBytes,
+    inputBytes,
+    inputSize,
+    &outputSize
+  );
+
+  assert(outputBytes);
+  assert(outputSize >= inputSize);
+
+  size_t decryptedSize;
+  uint8_t* decryptedBytes = AES_DecryptFileCBC(
+    keyBytes,
+    outputBytes,
+    outputSize,
+    &decryptedSize
+  );
+
+  assert(decryptedBytes);
+  assert(decryptedSize == inputSize);
+
+  for (size_t i = 0; i < inputSize; i++) {
+    assert(inputBytes[i] == decryptedBytes[i]);
+  }
+
+  printf("\t[✅] Passed\n");
+
+  free(inputBytes);
+  free(outputBytes);
+  free(decryptedBytes);
 }

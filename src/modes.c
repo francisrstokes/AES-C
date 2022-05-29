@@ -1,6 +1,6 @@
-#include <malloc.h>
 #include <stdlib.h>
 
+#include "common.h"
 #include "modes.h"
 #include "aes.h"
 

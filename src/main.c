@@ -1,13 +1,9 @@
-#include <stdio.h>
-#include <malloc.h>
-
+#include "common.h"
 #include "args.h"
 #include "test.h"
 #include "modes.h"
 
 extern struct argp argp;
-
-size_t GetFileSize(FILE* fp);
 
 // Define a table of encryption/decryption function, indexed by mode
 static CryptoOpFn EncryptFn[] = {
@@ -142,9 +138,3 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-size_t GetFileSize(FILE* fp) {
-  fseek(fp, 0, SEEK_END);
-  size_t fileSize = ftell(fp);
-  rewind(fp);
-  return fileSize;
-}
